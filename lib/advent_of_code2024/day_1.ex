@@ -34,15 +34,14 @@ defmodule AdventOfCode2024.Day1 do
   end
 
   defp find_distances(
-         %{
-           left: [minor_left_value | left_rest],
-           right: [minor_right_value | right_rest]
-         },
+         %{left: [minor_left_value | left_rest]} = parsed_input,
          distances
        ) do
-    updated_distances = [abs(minor_left_value - minor_right_value) | distances]
-    find_distances(%{left: left_rest, right: right_rest}, updated_distances)
+    count = Enum.count(parsed_input.right, &(&1 == minor_left_value))
+    updated_distances = [minor_left_value * count | distances]
+
+    find_distances(%{parsed_input | left: left_rest}, updated_distances)
   end
 
-  defp find_distances(%{left: [], right: []}, distances), do: distances
+  defp find_distances(%{left: []}, distances), do: distances
 end
