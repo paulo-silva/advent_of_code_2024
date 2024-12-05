@@ -1,21 +1,12 @@
 # AdventOfCode2024
 
-**TODO: Add description**
+To run a solution:
 
-## Installation
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `advent_of_code_2024` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:advent_of_code_2024, "~> 0.1.0"}
-  ]
-end
+```sh
+$ iex -S mix
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/advent_of_code_2024>.
-
+```elixir
+AdventOfCode2024.run(1) # <= day
+# {:ok, 1_590_491}
+```
