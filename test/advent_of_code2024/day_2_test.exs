@@ -19,7 +19,7 @@ defmodule AdventOfCode2024.Day2Test do
           "\n"
         )
 
-      assert Day2.run(input) == {:ok, 2}
+      assert Day2.run(input) == {:ok, 4}
     end
   end
 end

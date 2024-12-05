@@ -30,22 +30,50 @@ defmodule AdventOfCode2024.Day2 do
   defp find_safes_and_unsafes([], results), do: results
 
   defp validate_line(line) do
-    levels =
+    case parse_line_and_check_levels(line) do
+      :safe -> :safe
+      :unsafe -> try_removing_single_level(line)
+    end
+  end
+
+  defp try_removing_single_level(line) do
+    indexes = length(line) - 1
+
+    Enum.reduce_while(0..indexes, :unsafe, fn index, _ ->
       line
-      |> Enum.with_index()
-      |> Enum.reduce([], fn
-        {_, 0}, levels ->
-          levels
+      |> List.delete_at(index)
+      |> parse_line_and_check_levels()
+      |> case do
+        :safe -> {:halt, :safe}
+        :unsafe -> {:cont, :unsafe}
+      end
+    end)
+  end
 
-        {value, index}, levels ->
-          previous_value = Enum.at(line, index - 1)
-          [previous_value - value | levels]
-      end)
+  defp parse_line_and_check_levels(line) do
+    line
+    |> parse_levels()
+    |> check_levels()
+  end
 
+  defp check_levels(levels) do
     cond do
       Enum.all?(levels, &(&1 in [1, 2, 3])) -> :safe
       Enum.all?(levels, &(&1 in [-1, -2, -3])) -> :safe
       true -> :unsafe
     end
+  end
+
+  defp parse_levels(line) do
+    line
+    |> Enum.with_index()
+    |> Enum.reduce([], fn
+      {_, 0}, levels ->
+        levels
+
+      {value, index}, levels ->
+        previous_value = Enum.at(line, index - 1)
+        [previous_value - value | levels]
+    end)
   end
 end
