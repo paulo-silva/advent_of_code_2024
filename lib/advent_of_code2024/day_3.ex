@@ -1,6 +1,6 @@
 defmodule AdventOfCode2024.Day3 do
   @moduledoc """
-  Solution of day 2
+  Solution of day 3
   """
 
   def run(input) do
