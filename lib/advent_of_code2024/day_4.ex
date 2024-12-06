@@ -5,12 +5,8 @@ defmodule AdventOfCode2024.Day4 do
 
   @directions [
     {-1, -1},
-    {-1, 0},
     {-1, 1},
-    {0, -1},
-    {0, 1},
     {1, -1},
-    {1, 0},
     {1, 1}
   ]
 
@@ -19,16 +15,17 @@ defmodule AdventOfCode2024.Day4 do
       input
       |> String.split("\n")
       |> parse()
-      |> count_xmas()
+      |> count_mas()
 
     {:ok, count}
   end
 
-  defp count_xmas(grid) do
+  defp count_mas(grid) do
     Enum.reduce(grid, 0, fn {position, _}, count ->
       @directions
       |> Enum.reduce(count, fn direction, count ->
-        case matches?(grid, ~c"XMAS", position, direction) do
+        case matches_mas?(grid, position, direction) and
+               matches_mas?(grid, position, rotate90(direction)) do
           true -> count + 1
           false -> count
         end
@@ -36,18 +33,14 @@ defmodule AdventOfCode2024.Day4 do
     end)
   end
 
-  defp matches?(grid, [char | chars], position, direction) do
-    case at(grid, position) do
-      ^char ->
-        position = add(position, direction)
-        matches?(grid, chars, position, direction)
-
-      _ ->
-        false
-    end
+  defp matches_mas?(grid, position, direction) do
+    at(grid, position) === ?A and
+      at(grid, add(position, direction)) === ?M and
+      at(grid, add(position, rotate180(direction))) === ?S
   end
 
-  defp matches?(_, [], _, _), do: true
+  defp rotate90({a, b}), do: {b, -a}
+  defp rotate180({a, b}), do: {-a, -b}
 
   defp at(grid, position) do
     case grid do
