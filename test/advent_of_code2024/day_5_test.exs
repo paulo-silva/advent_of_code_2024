@@ -41,7 +41,7 @@ defmodule AdventOfCode2024.Day5Test do
           "\n"
         )
 
-      assert Day5.run(input) == {:ok, 143}
+      assert Day5.run(input) == {:ok, 123}
     end
   end
 end

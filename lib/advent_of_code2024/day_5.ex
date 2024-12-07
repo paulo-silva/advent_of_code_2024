@@ -7,7 +7,8 @@ defmodule AdventOfCode2024.Day5 do
     result =
       input
       |> parse_input()
-      |> filter_correct_pages()
+      |> filter_incorrect_pages()
+      |> fix_incorrect_pages()
       |> Enum.map(&get_middle_value/1)
       |> Enum.sum()
 
@@ -37,8 +38,8 @@ defmodule AdventOfCode2024.Day5 do
     end)
   end
 
-  defp filter_correct_pages({rules, pages_to_produce}) do
-    Enum.filter(pages_to_produce, &valid_page?(&1, rules))
+  defp filter_incorrect_pages({rules, pages_to_produce}) do
+    {rules, Enum.filter(pages_to_produce, &(not valid_page?(&1, rules)))}
   end
 
   defp valid_page?(page_to_produce, rules) do
@@ -58,6 +59,37 @@ defmodule AdventOfCode2024.Day5 do
           {:halt, false}
         end
     end)
+  end
+
+  defp fix_incorrect_pages({rules, incorrect_pages}) do
+    Enum.map(incorrect_pages, &fix_incorrect_page(&1, rules, length(&1)))
+  end
+
+  defp fix_incorrect_page(page, _, 0), do: page
+
+  defp fix_incorrect_page(incorrect_page, rules, attempts) do
+    fixed_page =
+      incorrect_page
+      |> Enum.reduce(:first, fn
+        value, :first ->
+          [value]
+
+        value, [last_value | rest] = acc ->
+          valid_values = Map.get(rules, last_value, [])
+
+          if value in valid_values do
+            [value | acc]
+          else
+            [last_value, value | rest]
+          end
+      end)
+      |> Enum.reverse()
+
+    if valid_page?(fixed_page, rules) do
+      fixed_page
+    else
+      fix_incorrect_page(fixed_page, rules, attempts - 1)
+    end
   end
 
   defp get_middle_value(page_to_produce) do
