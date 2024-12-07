@@ -8,12 +8,33 @@ defmodule AdventOfCode2024.Day6 do
   @guard "^"
 
   def run(input) do
-    result =
-      input
-      |> parse_board_and_find_guard()
-      |> count_steps()
+    {board, guard_position} = parse_board_and_find_guard(input)
+    clear_paths = get_clear_paths(board, guard_position)
+    result = count_new_obstructions(board, guard_position, clear_paths)
 
     {:ok, result}
+  end
+
+  defp count_new_obstructions(board, guard_position, possible_places) do
+    possible_places
+    |> Task.async_stream(
+      fn map_key ->
+        stuck_in_loop?(board, guard_position, map_key)
+      end,
+      timeout: 5,
+      on_timeout: :kill_task,
+      ordered: false
+    )
+    |> Enum.count(fn
+      {:ok, _} -> false
+      {:exit, :timeout} -> true
+    end)
+  end
+
+  defp stuck_in_loop?(board, guard_position, map_key) do
+    board
+    |> Map.put(map_key, @obstruction)
+    |> get_clear_paths(guard_position)
   end
 
   defp parse_board_and_find_guard(input) do
@@ -37,21 +58,21 @@ defmodule AdventOfCode2024.Day6 do
     end)
   end
 
-  defp count_steps(board_and_guard_position, dir \\ :up, steps \\ MapSet.new())
+  defp get_clear_paths(board, guard_position, dir \\ :up, steps \\ MapSet.new())
 
-  defp count_steps({board, guard_position}, dir, steps) do
+  defp get_clear_paths(board, guard_position, dir, steps) do
     case move_guard(guard_position, dir, board) do
       {@obstruction, _} ->
-        count_steps({board, guard_position}, rotate(dir), steps)
+        get_clear_paths(board, guard_position, rotate(dir), steps)
 
       {@clear_path, new_guard_position} ->
-        count_steps({board, new_guard_position}, dir, MapSet.put(steps, new_guard_position))
+        get_clear_paths(board, new_guard_position, dir, MapSet.put(steps, new_guard_position))
 
       {@guard, new_guard_position} ->
-        count_steps({board, new_guard_position}, dir, MapSet.put(steps, new_guard_position))
+        get_clear_paths(board, new_guard_position, dir, MapSet.put(steps, new_guard_position))
 
       {nil, _} ->
-        steps |> MapSet.to_list() |> length()
+        steps
     end
   end
 
