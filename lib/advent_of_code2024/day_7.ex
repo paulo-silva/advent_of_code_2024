@@ -7,12 +7,18 @@ defmodule AdventOfCode2024.Day7 do
     result =
       input
       |> parse_input()
-      |> Enum.reduce(0, fn {result, values}, acc ->
-        if match_result?(result, values), do: result + acc, else: acc
-      end)
+      |> Task.async_stream(
+        fn {result, values} -> if match_result?(result, values), do: result, else: 0 end,
+        ordered: false
+      )
+      |> Enum.reduce(0, fn {:ok, result}, acc -> acc + result end)
 
     {:ok, result}
   end
+
+  def concat(number_1, number_2), do: String.to_integer("#{number_1}#{number_2}")
+
+  defp operators, do: [&Kernel.+/2, &Kernel.*/2, &concat/2]
 
   defp parse_input(input), do: input |> String.split("\n") |> Enum.map(&parse_line/1)
 
@@ -23,18 +29,11 @@ defmodule AdventOfCode2024.Day7 do
     {String.to_integer(result), numbers}
   end
 
-  @operators [&Kernel.*/2, &Kernel.+/2]
-  defp match_result?(result, values, acc \\ 0)
-  defp match_result?(result, [head | tail], 0), do: match_result?(result, tail, head)
-  defp match_result?(same_result, _, same_result), do: true
-  defp match_result?(_, [], _), do: false
+  defp match_result?(result, [acc]), do: result == acc
 
-  defp match_result?(result, [value | tail], acc) do
-    operator_results =
-      for operator <- @operators do
-        match_result?(result, tail, operator.(acc, value))
-      end
-
-    Enum.any?(operator_results)
+  defp match_result?(result, [value_1, value_2 | tail]) do
+    operators()
+    |> Enum.map(&match_result?(result, [&1.(value_1, value_2) | tail]))
+    |> Enum.any?()
   end
 end
