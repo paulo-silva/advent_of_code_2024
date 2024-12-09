@@ -34,12 +34,18 @@ defmodule AdventOfCode2024.Day8 do
     dx = abs(x1 - x2)
     dy = abs(y1 - y2)
 
-    Enum.filter(
-      [
-        {if(x1 > x2, do: x1 + dx, else: x1 - dx), if(y1 > y2, do: y1 + dy, else: y1 - dy)},
-        {if(x2 > x1, do: x2 + dx, else: x2 - dx), if(y2 > y1, do: y2 + dy, else: y2 - dy)}
-      ],
-      fn {x, y} -> x in 0..@grid_size and y in 0..@grid_size end
-    )
+    [{x1, y1}, {x2, y2}] ++
+      in_direction({x1, y1}, {if(x1 > x2, do: dx, else: -dx), if(y1 > y2, do: dy, else: -dy)}) ++
+      in_direction({x2, y2}, {if(x2 > x1, do: dx, else: -dx), if(y2 > y1, do: dy, else: -dy)})
+  end
+
+  defp in_direction({x, y}, {dx, dy}, acc \\ []) do
+    {nx, ny} = {x + dx, y + dy}
+
+    if nx in 0..@grid_size and ny in 0..@grid_size do
+      in_direction({nx, ny}, {dx, dy}, [{nx, ny} | acc])
+    else
+      acc
+    end
   end
 end

@@ -22,7 +22,7 @@ defmodule AdventOfCode2024.Day8Test do
         ............
         """
 
-      assert Day8.run(input) == {:ok, 15}
+      assert Day8.run(input) == {:ok, 119}
     end
   end
 end
