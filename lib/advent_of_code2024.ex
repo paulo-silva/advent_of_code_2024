@@ -16,5 +16,5 @@ defmodule AdventOfCode2024 do
       {:error, error}
   end
 
-  defp input_file(day), do: "#{File.cwd!()}/lib/advent_of_code2024/inputs/day_#{day}"
+  def input_file(day), do: "#{File.cwd!()}/lib/advent_of_code2024/inputs/day_#{day}"
 end
