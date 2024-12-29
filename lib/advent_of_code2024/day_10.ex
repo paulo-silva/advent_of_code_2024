@@ -50,7 +50,6 @@ defmodule AdventOfCode2024.Day10 do
         |> List.flatten()
         |> Enum.chunk_by(&(&1 == "|"))
         |> Enum.reject(&(&1 == ["|"]))
-        |> Enum.uniq_by(fn [{@trailend, position} | _] -> position end)
         |> length()
       end,
       ordered: false

@@ -21,7 +21,7 @@ defmodule AdventOfCode2024.Day100Test do
           "\n"
         )
 
-      assert Day10.run(input) == {:ok, 36}
+      assert Day10.run(input) == {:ok, 81}
     end
   end
 end
