@@ -3,16 +3,27 @@ defmodule AdventOfCode2024.Day11 do
   Solution of day 11
   """
 
-  @default_number_of_blinks 25
+  @default_number_of_blinks 75
+  @cache_table :stones_cache
 
   def run(input, blinkings \\ @default_number_of_blinks) do
+    init_cache()
+
     result =
       input
       |> parse_input()
-      |> blink_multiple_times(blinkings)
-      |> length()
+      |> Enum.map(&count_stones(&1, blinkings))
+      |> Enum.sum()
 
     {:ok, result}
+  end
+
+  defp init_cache do
+    if :ets.whereis(@cache_table) != :undefined do
+      :ets.delete(@cache_table)
+    end
+
+    :ets.new(@cache_table, [:set, :public, :named_table])
   end
 
   defp parse_input(input) do
@@ -21,27 +32,46 @@ defmodule AdventOfCode2024.Day11 do
     |> Enum.map(&String.to_integer/1)
   end
 
-  defp blink_multiple_times(stones, 0), do: stones
+  defp count_stones(stone, blinkings) when is_integer(blinkings) do
+    cache_key = {stone, blinkings}
 
-  defp blink_multiple_times(stones, remaining_blinkings) do
-    stones
-    |> Enum.reduce([], &update_stones/2)
-    |> blink_multiple_times(remaining_blinkings - 1)
+    case :ets.lookup(@cache_table, cache_key) do
+      [{_key, result}] ->
+        result
+
+      [] ->
+        stone
+        |> calculate_stones(blinkings)
+        |> tap(&:ets.insert(@cache_table, {cache_key, &1}))
+    end
   end
 
-  defp update_stones(0, acc), do: [1 | acc]
+  defp calculate_stones({_first, _second}, 0), do: 2
+  defp calculate_stones(_stone, 0), do: 1
 
-  defp update_stones(value, acc) do
-    value_as_string = to_string(value)
-    number_of_digits = String.length(value_as_string)
+  defp calculate_stones(stone, depth) do
+    case blink_stone(stone) do
+      {first, second} ->
+        count_stones(first, depth - 1) + count_stones(second, depth - 1)
+
+      stone ->
+        count_stones(stone, depth - 1)
+    end
+  end
+
+  defp blink_stone(0), do: 1
+
+  defp blink_stone(stone) do
+    digits = Integer.digits(stone)
+    number_of_digits = length(digits)
 
     if even?(number_of_digits) do
       middle = div(number_of_digits, 2)
-      {left_half_digits, right_half_digits} = String.split_at(value_as_string, middle)
-
-      [String.to_integer(left_half_digits), String.to_integer(right_half_digits) | acc]
+      first = digits |> Enum.take(middle) |> Integer.undigits()
+      second = digits |> Enum.drop(middle) |> Integer.undigits()
+      {first, second}
     else
-      [value * 2024 | acc]
+      2024 * stone
     end
   end
 
